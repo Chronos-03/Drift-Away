@@ -113,25 +113,6 @@ for(let i  = 0; i < 30; i++) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const sky = document.getElementById('sky');
-const input = document.getElementById('noteInput');
-const releaseBtn = document.getElementById('releaseBtn');
-const clearBtn = document.getElementById('clearBtn');
-
 function createNote(text) {
     const note = document.createElement('div');
     note.className = 'note';
