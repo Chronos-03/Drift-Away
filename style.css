@@ -732,3 +732,21 @@ button:focus-visible {
     justify-content: center;
     min-width: 34px;
 }
+.note.mood-sad{
+    filter: saturate(0.6) brightness(0.85);
+}
+.note.mood-angry {
+    font-style: normal;
+    font-weight: 500;
+    animation : angryPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes angryPulse {
+    from {box-shadow: 0 0 6px 0 var(--c) , 0 8px 32px rgba(0 ,0 ,0 ,0.25);}
+    to {box-shadow: 0 0 26px 4px var(--c), 0 8px 32px rgba(0 , 0,0, 0.25);}
+}
+.note.mood-calm {
+    box-shadow: 0 0 36px -6px var(--c), 0 8px 3px rgba(0 ,0 ,0,0.2);
+}
+@media (prefer-reduced-motion: reduce) {
+    .note.mood-angry {animation: none;}
+}

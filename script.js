@@ -34,7 +34,9 @@ const MOODS = {
     vx: [10, 20],
     vy: [-14, -7],
     bob: 5,
-    bs: 0.0016
+    bs: 0.0016,
+    wa: 16,
+    wf: 0.004
   },
   sad: {
     label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -48,7 +50,9 @@ const MOODS = {
     vx: [3, 7],
     vy: [3, 6],
     bob: 2,
-    bs: 0.0005
+    bs: 0.0005,
+    wa: 3,
+    wf: 0.001
   },
   angry: {
     label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -63,7 +67,9 @@ const MOODS = {
     vy: [-6, -2],
     bob: 2,
     bs: 0.002,
-    shake: 2.5
+    shake: 3,
+    wa: 0,
+    wf: 0
   },
   calm: {
     label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -77,8 +83,31 @@ const MOODS = {
     vx: [3, 6],
     vy: [-4, -2],
     bob: 6,
-    bs: 0.0004
+    bs: 0.0004,
+    wa: 14,
+    wf: 0.0008
   }
+};
+const MOOD_FX = {
+    happy: [
+        {transalate: '0 14px', rotate: '-8deg'},
+        {translate: '0 -10px' , roate: '8deg'},
+        {transalate: '0 6px' , rotate: '-5deg'},
+        {translate: '0 -4px' , rotate: '3deg'},
+        {translate: '0 0' , rotate: '0deg'}
+    ],
+    sad: [
+        {translate : '0 -16px'},
+        {translate: '0 0'}
+    ],
+    angry: [
+        {translate: '-8px 0'} , {translate: '8px 0'},
+        {translate: '-6px 0'}, {translate: '6px 0'},
+    ],
+    calm: [
+        {scale: '0.9'},
+        {scale: '1'}
+    ]
 };
 const THEMES= {
     overworld:{label:'Overworld'},
@@ -306,7 +335,8 @@ const rand = r => r[0] + Math.random() * (r[1] - r[0]);
 function spawnNote(d, isNew) {
   const type = TYPES.some(t => t.id === d.type) ? d.type : 'sign';
   const el = document.createElement('div');
-  el.className = `note type-${type}` + (d.pinned ? ' pinned' : '');
+  const moodId = MOODS[d.mood] ? d.mood : 'random';
+  el.className = `note type-${type} mood-${moodId}` + (d.pinned ? ' pinned' : '');
   el.style.setProperty('--c', d.color);
   el.style.left = '0';
   el.style.top = '0';
@@ -331,6 +361,8 @@ function spawnNote(d, isNew) {
     shake: m.shake || 0,
     bob: m.bob,
     bs: m.bs * (0.8 + Math.random() * 0.4),
+    wa: m.wa || 0,
+    wf: (m.wf || 0) * (0.8 + Math.random() * 0.4),
     rot: Math.round((Math.random() - 0.5) * 8),
     phase: Math.random() * 6.28,
     bobNow: 0,
@@ -343,6 +375,12 @@ function spawnNote(d, isNew) {
   el.addEventListener('click', () => togglePin(n));
 
   notes.push(n);
+  if (isNew && MOOD_FX[moodId]) {
+    el.animate(MOOD_FX[moodId], {
+        duration: moodId === 'angry' ? 450 : moodId === 'happy' ? 1300 : 1600,
+        easing: 'ease-out'
+    });
+  }
   requestAnimationFrame(() => el.classList.add('visible'));
   if (isNew) popEffect(n.x + w / 2, n.y + h / 2, d.color);
   updateStats();
@@ -458,6 +496,10 @@ function loop(now) {
     clampAndBounce(n, A);
     if (!n.hover) n.bobNow = Math.sin(now * n.bs + n.phase) * n.bob;
     let tx = n.x, ty = n.y + n.bobNow;
+    if(n.wa && !n.hover) {
+        ty += Math.sin(now * n.wf + n.phase) * n.wa;
+        ty += Math.cos(now * n.wf * 0.5 + n.phase) * n.wa * 0.5;
+    }
     if (n.shake && !n.hover) {
       tx += (Math.random() - 0.5) * n.shake * 2;
       ty += (Math.random() - 0.5) * n.shake * 2;
@@ -517,7 +559,12 @@ buildSeg(
   $('moods'),
   Object.entries(MOODS).map(([id, m]) => ({ id, label: m.label, title: m.title })),
   selectedMood,
-  id => { selectedMood = id; input.focus(); sfx.click(); }
+  id => {
+    selectMood =id;
+    pickColor(MOOS[id].color);
+    input.focus();
+    sfx.click();
+  }
 );
 clearBtn.addEventListener('click', () => {
   const hasPinned = notes.some(n => n.pinned && !n.fading);
