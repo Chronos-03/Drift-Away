@@ -401,7 +401,6 @@ input:focus {
     border-bottom: none;
     border-radius: 4px 4px 0 0;
 }
-
 footer {
     padding: 16px 32px 24px;
     font-size: 0.75rem;
@@ -409,7 +408,6 @@ footer {
     letter-spacing: 0.03rem;
 }
 
-/* ---------- Top UI ---------- */
 .title {
     position: fixed;
     top: 18px;
@@ -698,3 +696,31 @@ button:focus-visible {
         animation: none;
     }
 }
+
+.note.type-sign {
+    min-width: 130px;
+    padding: 30px 42px;
+    text-align: center;
+    font-size: 1.3rem;
+    color: #1b2038;
+    border: none;
+    border-radius: 60px;
+    backdrop-filter: none;
+    box-shadow: none;
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.3));
+}
+.note.type-sign,
+.note.type-sign .txt::before,
+.note.type-sign .txt::after {
+    background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), var(--c, #cfd6f0);
+}
+.note.type-sign .txt::before,
+.note.type-sign .txt::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    aspect-ratio: 1;
+    border-radius: 50%;
+}
+.note.type-sign .txt::before { width: 38%; left: 12%; top: -32%; }
+.note.type-sign .txt::after  { width: 46%; left: 38%; top: -48%; }

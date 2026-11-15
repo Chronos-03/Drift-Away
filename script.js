@@ -18,11 +18,11 @@ const THEMES= {
     end:   {label:'The End', sky:['#07030f', '#2b1559'], stars:1}
 };
 const SKY = [
-    ['#5b9df0' , '#a9d4ff'],
-    ['#3b4a9c', '#ff9a5c'],
-    ['#0a1030', '#1d2b64'],
-    ['#4a5fb0', '#ffc98a'],
-    ['#5b9df0','#a9d4ff']
+    ['#1f3a73' , '#5d7fb5'],
+    ['#2a3270', '#c4703f'],
+    ['#05081c', '#121a42'],
+    ['#4a5fb0', '#d9a46a'],
+    ['#1f3a73','#5d7fb5']
 ];
 const GAP = 24;
 const CYCLE = 150000;
@@ -120,7 +120,7 @@ function mix(a, b, k) {
 }
 
 let skyClock = 0;
-let lastSky = { top: '#5b9df0', bot: '#a9d4ff', night: 0 };
+let lastSky = { top: '#1f3a73', bot: '#5d7fb5', night: 0 };
 
 function updateSky() {
   const th = settings.theme;
