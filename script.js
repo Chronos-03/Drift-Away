@@ -6,11 +6,79 @@ const TYPES = [
   { id: 'bottle', label: '🍾', title: 'Bottle' }
 ];
 const MOODS = {
-    random:{label:'🎲', title:'Random', color:null ,   vx:[6,16], vy:[-12, -4], bob:3, bs: 0.0008},
-    happy: {label:'😊', title:'Happy', color:'#ffe135', vx:[10, 20], vy:[-14, -7], bob:5, bs: 0.0016},
-    sad:{label:'😢', title:'Sad', color:'#5c9dff', vx:[3, 7], vy:[3, 6] , bob:2, bs:0.0005},
-    angry: {label:'😠', title:'Angry', color:'#ff5a5a', vx:[14, 26], vy:[-6, -2], bob:2, bs: 0.002, shake:2.5},
-    calm: {label:'😌', title:'Calm', color:'#2de8e8', vx:[3, 6], vy:[-4, -2], bob:6, bs: 0.0004}
+  random: {
+    label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+      <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/>
+      <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/>
+      <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+    </svg>`,
+    title: 'Random',
+    color: null,
+    vx: [6, 16],
+    vy: [-12, -4],
+    bob: 3,
+    bs: 0.0008
+  },
+  happy: {
+    label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+      <line x1="9" y1="9" x2="9.01" y2="9"/>
+      <line x1="15" y1="9" x2="15.01" y2="9"/>
+    </svg>`,
+    title: 'Happy',
+    color: '#ffe135',
+    vx: [10, 20],
+    vy: [-14, -7],
+    bob: 5,
+    bs: 0.0016
+  },
+  sad: {
+    label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+      <line x1="9" y1="9" x2="9.01" y2="9"/>
+      <line x1="15" y1="9" x2="15.01" y2="9"/>
+    </svg>`,
+    title: 'Sad',
+    color: '#5c9dff',
+    vx: [3, 7],
+    vy: [3, 6],
+    bob: 2,
+    bs: 0.0005
+  },
+  angry: {
+    label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+      <path d="M7.5 8.5l3 1.5"/>
+      <path d="M16.5 8.5l-3 1.5"/>
+    </svg>`,
+    title: 'Angry',
+    color: '#ff5a5a',
+    vx: [14, 26],
+    vy: [-6, -2],
+    bob: 2,
+    bs: 0.002,
+    shake: 2.5
+  },
+  calm: {
+    label: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M8 14s1.5 1.5 4 1.5 4-1.5 4-1.5"/>
+      <line x1="9" y1="9" x2="9.01" y2="9"/>
+      <line x1="15" y1="9" x2="15.01" y2="9"/>
+    </svg>`,
+    title: 'Calm',
+    color: '#2de8e8',
+    vx: [3, 6],
+    vy: [-4, -2],
+    bob: 6,
+    bs: 0.0004
+  }
 };
 const THEMES= {
     overworld:{label:'Overworld'},
@@ -401,6 +469,7 @@ function loop(now) {
   }
   requestAnimationFrame(loop);
 }
+
 function buildSeg(box, items, current, onPick) {
   const btns = [];
   const set = id => btns.forEach(([i, b]) => b.setAttribute('aria-pressed', String(i === id)));
@@ -408,7 +477,12 @@ function buildSeg(box, items, current, onPick) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'seg-btn';
-    b.textContent = it.label;
+
+    if (typeof it.label === 'string' && it.label.trim().startsWith('<svg')) {
+      b.innerHTML = it.label;
+    } else {
+      b.textContent = it.label;
+    }
     b.title = it.title || '';
     b.setAttribute('aria-label', it.title || it.label);
     b.addEventListener('click', () => { set(it.id); onPick(it.id); });

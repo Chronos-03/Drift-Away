@@ -50,8 +50,6 @@ body::before {
     pointer-events: none;
     z-index: 0;
 }
-
-/* ---------- Sun, moon, stars ---------- */
 .sun, .moon {
     position: absolute;
     width: 72px;
@@ -659,7 +657,6 @@ button:focus-visible {
     margin: 0 auto;
 }
 
-/* ---------- Small screens ---------- */
 @media (max-width: 520px) {
     .title {
         font-size: 1.2rem;
@@ -724,3 +721,14 @@ button:focus-visible {
 }
 .note.type-sign .txt::before { width: 38%; left: 12%; top: -32%; }
 .note.type-sign .txt::after  { width: 46%; left: 38%; top: -48%; }
+.seg-btn svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+.seg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+}
