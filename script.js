@@ -1,20 +1,20 @@
-const COLORS = ['#ff5a5a', '#ffe135', '#4cf064', '#2de8e8','#5c9bff','#ffe6ec7'];
-const TYPE = [
+const COLORS = ['#ff5a5a', '#ffa02e', '#ffe135', '#4cf06a', '#2de8e8','#5c9dff','#bf7bff','#ff6ec7'];
+const TYPES = [
   { id: 'sign',   label: '🪧', title: 'Sign' },
   { id: 'book',   label: '📖', title: 'Book' },
   { id: 'torch',  label: '🔦', title: 'Torch' },
   { id: 'bottle', label: '🍾', title: 'Bottle' }
 ];
-const MODS = {
+const MOODS = {
     random:{label:'🎲', title:'Random', color:null ,   vx:[6,16], vy:[-12, -4], bob:3, bs: 0.0008},
-    happy: {label:'😊', title:'Happy', colo:'#ffe135', vx:[10, 20], vy:[-14, -7], bob:5, bs: 0.0016},
+    happy: {label:'😊', title:'Happy', color:'#ffe135', vx:[10, 20], vy:[-14, -7], bob:5, bs: 0.0016},
     sad:{label:'😢', title:'Sad', color:'#5c9dff', vx:[3, 7], vy:[3, 6] , bob:2, bs:0.0005},
     angry: {label:'😠', title:'Angry', color:'#ff5a5a', vx:[14, 26], vy:[-6, -2], bob:2, bs: 0.002, shake:2.5},
     calm: {label:'😌', title:'Calm', color:'#2de8e8', vx:[3, 6], vy:[-4, -2], bob:6, bs: 0.0004}
 };
 const THEMES= {
     overworld:{label:'Overworld'},
-    nether:{lable:'Nether', sky:['#2b0606', '#b8314a'], stars: 0},
+    nether:{label:'Nether', sky:['#2b0606', '#b8341a'], stars: 0},
     end:   {label:'The End', sky:['#07030f', '#2b1559'], stars:1}
 };
 const SKY = [
@@ -26,21 +26,21 @@ const SKY = [
 ];
 const GAP = 24;
 const CYCLE = 150000;
-const SETTING_KEY = 'driftAway.settings';
+const SETTINGS_KEY = 'driftAway.settings';
 const NOTES_KEY = 'driftAway.notes';
 function load(key, fallback) {
     try {
         const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback;
     }
     catch {
-        return fallbacl;
+        return fallback;
     }
 }
 function save(key , val) {
     try{ localStorage.setItem(key, JSON.stringify(val));} catch{}
 }
 const defaults = {
-    sound:true, cycle:true, brust:true, speed: 1, life: 75, theme:'overworld'
+    sound:true, cycle:true, burst:true, speed: 1, life: 75, theme:'overworld'
 };
 const settings = Object.assign({}, defaults, load(SETTINGS_KEY, {}));
 if(!THEMES[settings.theme])settings.theme = 'overworld';
@@ -60,7 +60,7 @@ let selectedType = 'sign';
 let selectedMood = 'random';
 
 let audioCtx;
-function beep(fre, dur, type = 'sqaure', vol = 0.04, slideTo) {
+function beep(freq, dur, type = 'square', vol = 0.04, slideTo) {
     if(!settings.sound) return;
     try {
         audioCtx = audioCtx || new(window.AudioContext || window.webkitAudioContext)();
@@ -68,7 +68,9 @@ function beep(fre, dur, type = 'sqaure', vol = 0.04, slideTo) {
         const o = audioCtx.createOscillator();
         const g = audioCtx.createGain();
         o.type = type;
+        o.frequency.setValueAtTime(freq, t);
         if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+        g.gain.setValueAtTime(vol, t);
         g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
         o.connect(g).connect(audioCtx.destination);
         o.start(t);
@@ -76,13 +78,13 @@ function beep(fre, dur, type = 'sqaure', vol = 0.04, slideTo) {
     } catch {}
 }
 const sfx = {
-    release: () => { beep(520, 0.08); setTimeout(() => beep(780, 0.01), 70);},
+    release: () => { beep(520, 0.08); setTimeout(() => beep(780, 0.1), 70);},
     pop:  () => beep(320, 0.12 , 'square', 0.035 , 90),
     pin:  () => beep(660 , 0.07, 'triangle', 0.06),
     click: () => beep(400 , 0.05 , 'square' , 0.025)
 };
 for(let i = 0; i < 6; i++) {
-    const c = document.createElementNS('div');
+    const c = document.createElement('div');
     c.className = 'cloud';
     const dur = 110 + Math.random() * 130;
     c.style.width = (90 + Math.random() * 120) + 'px';
@@ -96,7 +98,7 @@ for(let i = 0; i < 70; i++) {
     const st = document.createElement('div');
     st.className = 'star';
     st.style.left = Math.random() * 100 + '%';
-    st.style.top = Math.ramdom() * 65 + '%';
+    st.style.top = Math.random() * 65 + '%';
     st.style.opacity = (0.4 + Math.random() * 0.6).toFixed(2);
     starsEl.appendChild(st);
 }
@@ -105,7 +107,7 @@ for(let i  = 0; i < 30; i++) {
     e.className = 'ember';
     const size = 3 + Math.random() * 4;
     const dur = 6 + Math.random() * 9;
-    e.style.wdith = e.style.height = size + 'px';
+    e.style.width = e.style.height = size + 'px';
     e.style.left = Math.random() * 100 + '%';
     e.style.animationDuration = dur + 's';
     e.style.animationDelay = -(Math.random() * dur) + 's';
@@ -331,67 +333,267 @@ function fadeAndRemove(n) {
 function clearNotes(includePinned) {
   notes.slice().forEach(n => { if (includePinned || !n.pinned) fadeAndRemove(n); });
 }
-// function clampAndBounce(n, A) {
-//     if(n.x < A.I) {n.x = A.I; n.vx = Math.abs(n.vx);}
-//     if(n.x + n.w > A.r) {n.x = }
-// }
-
-function createNote(text) {
-    const note = document.createElement('div');
-    note.className = 'note';
-    note.textContent = text;
-
-    const startX = 10 + Math.random() * 70;
-    const startY = 15 + Math.random() * 50;
-
-    note.style.left = startX + '%';
-
-  
-    const rotation = (Math.random() - 0.5) * 12;
-    note.style.transform = `rotate(${rotation}deg)`;
-
-    sky.appendChild(note);
-
-    requestAnimationFrame(() => {
-        note.classList.add('visible');
-    });
-
-    animateDrift(note, startX, startY, rotation);
-
-    const lifetime = 12000 + Math.random() * 8000;
-    setTimeout(() => {
-        note.classList.add('fading');
-        setTimeout(() => note.remove(), 2600);
-    }, lifetime);
+function clampAndBounce(n, A) {
+  if (n.x < A.l) { n.x = A.l; n.vx = Math.abs(n.vx); }
+  if (n.x + n.w > A.r) { n.x = A.r - n.w; n.vx = -Math.abs(n.vx); }
+  if (n.y < A.t) { n.y = A.t; n.vy = Math.abs(n.vy); }
+  if (n.y + n.h > A.b) { n.y = A.b - n.h; n.vy = -Math.abs(n.vy); }
 }
 
-function animateDrift(note, startX, startY, startRot) {
-    const duration = 1800 + Math.random() * 10000;
-    const startTime = performance.now();
+let last = performance.now();
+let skyAcc = 0;
 
-    const driftX = (Math.random() - 0.5) * 35;
-    const driftY = -15 - Math.random() * 25;
-    const rotChange = (Math.random() - 0.5) * 18;
+function loop(now) {
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  const A = area();
+  const wall = Date.now();
 
-    function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+  if (settings.cycle) skyClock += dt * 1000;
+  skyAcc += dt;
+  if (skyAcc > 0.2) { skyAcc = 0; updateSky(); }
 
-        const ease = 1 - Math.pow(1 - progress, 2.5);
-        const x = startX + driftX * ease;
-        const y = startY + driftY * ease;
-        const rot = startRot + rotChange * ease;
+  for (const n of notes) {
+    if (!n.fading && !n.pinned && wall > n.expires) fadeAndRemove(n);
+    if (n.hover) continue;
+    n.x += n.vx * dt * settings.speed;
+    n.y += n.vy * dt * settings.speed;
+    clampAndBounce(n, A);
+  }
 
-        note.style.left = x + '%';
-        note.style.top = y + '%';
-        note.style.transform = `rotate(${rot}deg)`;
-
-        if(progress < 1 && note.parentElement) {
-            requestAnimationFrame(frame);
+  for (let i = 0; i < notes.length; i++) {
+    for (let j = i + 1; j < notes.length; j++) {
+      const a = notes[i], b = notes[j];
+      if (a.fading || b.fading) continue;
+      const wa = a.hover ? 0 : 1, wb = b.hover ? 0 : 1;
+      const total = wa + wb;
+      if (!total) continue;
+      const ox = Math.min(a.x + a.w + GAP - b.x, b.x + b.w + GAP - a.x);
+      const oy = Math.min(a.y + a.h + GAP - b.y, b.y + b.h + GAP - a.y);
+      if (ox > 0 && oy > 0) {
+        if (ox < oy) {
+          const dir = (a.x + a.w / 2 < b.x + b.w / 2) ? -1 : 1;
+          a.x += dir * ox * wa / total; b.x -= dir * ox * wb / total;
+          if (wa) a.vx = dir * Math.abs(a.vx);
+          if (wb) b.vx = -dir * Math.abs(b.vx);
+        } else {
+          const dir = (a.y + a.h / 2 < b.y + b.h / 2) ? -1 : 1;
+          a.y += dir * oy * wa / total; b.y -= dir * oy * wb / total;
+          if (wa) a.vy = dir * Math.abs(a.vy);
+          if (wb) b.vy = -dir * Math.abs(b.vy);
         }
+      }
     }
-    requestAnimationFrame(frame);
+  }
+
+  for (const n of notes) {
+    clampAndBounce(n, A);
+    if (!n.hover) n.bobNow = Math.sin(now * n.bs + n.phase) * n.bob;
+    let tx = n.x, ty = n.y + n.bobNow;
+    if (n.shake && !n.hover) {
+      tx += (Math.random() - 0.5) * n.shake * 2;
+      ty += (Math.random() - 0.5) * n.shake * 2;
+    }
+    const rot = n.hover ? 0 : n.rot;
+    const scale = n.hover ? 1.06 : 1;
+    n.el.style.transform =
+      `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) rotate(${rot}deg) scale(${scale})`;
+  }
+  requestAnimationFrame(loop);
 }
+function buildSeg(box, items, current, onPick) {
+  const btns = [];
+  const set = id => btns.forEach(([i, b]) => b.setAttribute('aria-pressed', String(i === id)));
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'seg-btn';
+    b.textContent = it.label;
+    b.title = it.title || '';
+    b.setAttribute('aria-label', it.title || it.label);
+    b.addEventListener('click', () => { set(it.id); onPick(it.id); });
+    box.appendChild(b);
+    btns.push([it.id, b]);
+  });
+  set(current);
+  return set;
+}
+
+const swatchBox = $('swatches');
+const swatchEls = [];
+function addSwatch(color) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'swatch' + (color ? '' : ' random selected');
+  b.setAttribute('aria-label', color ? 'Colour ' + color : 'Random colour');
+  if (color) b.style.setProperty('--c', color);
+  b.addEventListener('click', () => { pickColor(color); input.focus(); });
+  swatchBox.appendChild(b);
+  swatchEls.push([color, b]);
+}
+function pickColor(color) {
+  selectedColor = color;
+  swatchEls.forEach(([c, b]) => b.classList.toggle('selected', c === color));
+}
+addSwatch(null);
+COLORS.forEach(addSwatch);
+
+buildSeg($('types'), TYPES, selectedType, id => { selectedType = id; input.focus(); sfx.click(); });
+buildSeg(
+  $('moods'),
+  Object.entries(MOODS).map(([id, m]) => ({ id, label: m.label, title: m.title })),
+  selectedMood,
+  id => { selectedMood = id; input.focus(); sfx.click(); }
+);
+clearBtn.addEventListener('click', () => {
+  const hasPinned = notes.some(n => n.pinned && !n.fading);
+  const includePinned = hasPinned ? confirm('Clear pinned notes too?\n\nOK = clear everything, Cancel = keep pinned notes') : true;
+  clearNotes(includePinned);
+});
+
+function setSound(v){
+    settings.sound =v;
+    $('optSound').checked = v;
+    soundBtn.textContent = v ? '🔊' : '🔇';
+    save(SETTINGS_KEY , settings);
+}
+function openSettings() {overlay.hidden = false; $('closeSettings').focus();}
+function closeSettings() {overlay.hidden = true; input.focus();}
+
+$('optCycle').checked = settings.cycle;
+$('optBurst').checked = settings.burst;
+$('optSpeed').value = settings.speed;
+$('optLife').value = settings.life;
+$('speedVal').textContent = settings.speed.toFixed(1) + 'x';
+$('lifeVal').textContent = settings.life + 's';
+setSound(settings.sound);
+
+soundBtn.addEventListener('click', () => {setSound(!settings.sound); sfx.click();});
+settingsBtn.addEventListener('click', openSettings);
+$('closeSettings').addEventListener('click', closeSettings);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeSettings(); });
+$('optSound').addEventListener('change' , e => setSound (e.target.checked));
+$('optCycle').addEventListener('change' , e => {settings.cycle = e.target.checked; save(SETTINGS_KEY, settings);});
+$('optBurst').addEventListener('change' , e => {settings.burst = e.target.checked; save(SETTINGS_KEY, settings);});
+$('optSpeed').addEventListener('input', e => {
+    settings.speed = parseFloat(e.target.value);
+    $('speedVal').textContent = settings.speed.toFixed(1) + 'x';
+    save(SETTINGS_KEY, settings);
+});
+$('optLife').addEventListener('input' , e => {
+    settings.life = parseInt(e.target.value, 10);
+    $("lifeVal").textContent = settings.life + 's';
+    save(SETTINGS_KEY, settings);
+});
+setThemeBtn = buildSeg (
+    $('themes'),
+    Object.entries(THEMES).map(([id , t]) => ({id, label: t.label, title: t.label})),
+    settings.theme, 
+    id => setTheme(id)
+);
+$('wipeBtn').addEventListener('click', () => {
+    if(!confirm('Delete ALL notes (including pinned) and reset the counter?')) return;
+    clearNotes(true);
+    releasedCount = 0;
+    persist();
+    updateStats();
+});
+
+function wrapText(c, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '';
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (c.measureText(test).width > maxW && line) {
+      c.fillText(line, x, y);
+      line = word;
+      y += lineH;
+    } else {
+      line = test;
+    }
+  }
+  c.fillText(line, x, y);
+}
+
+async function exportImage() {
+  try { await document.fonts.ready; } catch {}
+  const W = 1280, H = 720;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  const sx = W / innerWidth, sy = H / innerHeight;
+  const css = getComputedStyle(document.body);
+
+  const g = c.createLinearGradient(0, 0, 0, H * 0.7);
+  g.addColorStop(0, lastSky.top);
+  g.addColorStop(1, lastSky.bot);
+  c.fillStyle = lastSky.bot; c.fillRect(0, 0, W, H);
+  c.fillStyle = g; c.fillRect(0, 0, W, H * 0.7);
+
+  const sa = parseFloat(starsEl.style.opacity) || 0;
+  if (sa > 0) {
+    c.fillStyle = '#fff';
+    starsEl.querySelectorAll('.star').forEach(s => {
+      c.globalAlpha = sa * parseFloat(s.style.opacity);
+      c.fillRect(parseFloat(s.style.left) / 100 * W, parseFloat(s.style.top) / 100 * H, 3, 3);
+    });
+    c.globalAlpha = 1;
+  }
+
+  const gh = 96 * sy;
+  c.fillStyle = css.getPropertyValue('--dirt').trim(); c.fillRect(0, H - gh, W, gh);
+  c.fillStyle = css.getPropertyValue('--grass').trim(); c.fillRect(0, H - gh, W, 24 * sy);
+
+  c.textBaseline = 'top';
+  for (const n of notes) {
+    if (n.fading) continue;
+    const x = n.x * sx, y = n.y * sy, w = n.w * sx, h = n.h * sy;
+    c.fillStyle = n.type === 'torch' ? 'rgba(30, 22, 14, 0.9)' : 'rgba(20, 20, 28, 0.8)';
+    c.fillRect(x, y, w, h);
+    c.lineWidth = 2 * sx; c.strokeStyle = n.color; c.strokeRect(x, y, w, h);
+    c.fillStyle = n.type === 'torch' ? n.color : '#f2f0eb';
+    c.font = `italic ${22 * sx}px "Cormorant Garamond", serif`;
+    wrapText(c, n.text, x + 16 * sx, y + 14 * sx, w - 32 * sx, 22 * sx * 1.45);
+  }
+
+  c.fillStyle = '#f0eee9';
+  c.font = '500 30px "Cormorant Garamond", serif';
+  c.fillText('Drift Notes', 24, 24);
+
+  const a = document.createElement('a');
+  a.download = 'drift-notes.png';
+  a.href = cv.toDataURL('image/png');
+  a.click();
+}
+$('exportBtn').addEventListener('click', exportImage);
+
+document.addEventListener('keydown', e => {
+    if(!overlay.hidden) {
+        if(e.key === 'Escape') closeSettings();
+        return;
+    }
+    if(e.key === 'Escape') {
+        if(input.value) input.value = "";
+        else clearNotes(false);
+        return;
+    }
+    if(e.altKey && /^Digit[0-8]$/.test(e.code)) {
+        e.preventDefault();
+        const i = parseInt(e.code.slice(5) , 10);
+        pickColor(i === 0 ? null : COLORS[i - 1]);
+    }
+});
+
+document.body.dataset.theme = settings.theme;
+updateSky();
+const saved = load(NOTES_KEY, {notes :[]});
+(saved.notes || []).forEach(d => {
+    if(d && d.text && (d.pinned || d.expires > Date.now())) spawnNote(d, false);
+});
+updateStats();
+requestAnimationFrame(loop);
+input.focus();
+
 function releaseNote() {
     const text = input.value.trim();
     if(!text) return;
